@@ -1,6 +1,6 @@
 # Getting started
 
-Add `127.0.0.1 myapp.local api.myapp.local` in `/etc/hosts/` file, then run:
+Add `127.0.0.1 emi.imageau.local api.emi.imageau.local` in `/etc/hosts/` file, then run:
 
 ```sh
 cp .env.example .env
@@ -29,8 +29,8 @@ To stop all services, run:
 
 # Front
 
-https://myapp.local/
+https://emi.imageau.local/
 
 # Database administration
 
-http://localhost:8080/?server=db&username=user&db=myapp
+http://localhost:8080/?server=db&username=ime&db=ime
