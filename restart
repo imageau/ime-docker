@@ -3,7 +3,10 @@
 ARG=$1
 FORCE=$2
 
-if [ "$FORCE" == "--force" ]; then
+if [[ "$ARG" == "--force" ]]; then
+    docker compose down
+    docker compose up --build -d
+elif [[ "$FORCE" == "--force" ]]; then
     docker compose down $ARG
     docker compose up $ARG --build -d
 else
