@@ -78,7 +78,7 @@ ARG BACK_PATH=./src/back
 COPY $BACK_PATH /var/www
 RUN chown -R www-data:www-data /var/www
 
-CMD sh -c "composer install --optimize-autoloader --no-dev && php artisan key:generate && php artisan passport:keys && php-fpm";
+CMD sh -c "composer install --optimize-autoloader --no-dev && php artisan key:generate && (php artisan passport:keys || true) && php-fpm";
 
 # Final stage based on the environment
 FROM $ENV as final
