@@ -1,0 +1,4 @@
+#!/bin/bash
+# This script executes pnpm commands inside the Docker container.
+docker compose exec front pnpm "$@"
+docker compose restart front

@@ -1,0 +1,10 @@
+services:
+    front:
+        volumes:
+            - ${FRONT_PATH}:/app
+    back:
+        volumes:
+            - ${BACK_PATH}:/var/www
+    horizon:
+        volumes:
+            - ${BACK_PATH}:/var/www

@@ -1,0 +1,3 @@
+#!/bin/bash
+# This script executes Composer commands inside the Docker container.
+docker compose exec back composer "$@"

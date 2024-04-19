@@ -1,0 +1,3 @@
+#!/bin/bash
+# This script executes php artisan commands inside the Docker container.
+docker compose exec back php artisan "$@"

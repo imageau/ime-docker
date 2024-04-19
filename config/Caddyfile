@@ -1,0 +1,15 @@
+{$FRONT_DOMAIN} {
+    tls internal
+    reverse_proxy front:3000
+}
+
+{$BACK_DOMAIN}, caddy {
+    tls internal
+    root * /srv/back/public
+	file_server
+	encode gzip
+    
+	php_fastcgi back:9000 {
+        root /var/www/public
+	}
+}

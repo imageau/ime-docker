@@ -1,0 +1,11 @@
+#!/bin/bash
+
+ARG=$1
+FORCE=$2
+
+if [ "$FORCE" == "--force" ]; then
+    docker compose down $ARG
+    docker compose up $ARG --build -d
+else
+    docker compose restart $ARG
+fi

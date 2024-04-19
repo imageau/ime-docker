@@ -1,0 +1,90 @@
+x-back-settings: &back-settings
+    build:
+        context: ./
+        dockerfile: ./config/back.dockerfile
+        args:
+            ENV: ${ENV}
+            BACK_PATH: ${BACK_PATH}
+    environment:
+        APP_URL: 'https://${BACK_DOMAIN}'
+        JWT_DOMAIN: '.${FRONT_DOMAIN}'
+        FRONTEND_URL: 'https://${FRONT_DOMAIN}'
+        DB_CONNECTION: mysql
+        DB_HOST: db
+        DB_PORT: 3306
+        DB_DATABASE: ${DB_DATABASE}
+        DB_USERNAME: ${DB_USERNAME}
+        DB_PASSWORD: ${DB_PASSWORD}
+        REDIS_HOST: redis
+    depends_on:
+        - db
+        - redis
+
+services:
+    back:
+        <<: *back-settings
+
+    horizon:
+        <<: *back-settings
+        command: php artisan horizon
+        depends_on:
+            back:
+                condition: service_healthy
+
+    front:
+        build:
+            context: ./
+            dockerfile: ./config/front.dockerfile
+            args:
+                ENV: ${ENV}
+                FRONT_PATH: ${FRONT_PATH}
+        extra_hosts:
+            - '${BACK_DOMAIN}:host-gateway'
+        volumes:
+            - pnpm_store:/app/.pnpm-store
+        environment:
+            NEXT_PUBLIC_API_URL: 'https://${BACK_DOMAIN}'
+            PROXY_URL: 'https://${BACK_DOMAIN}'
+            ENV: ${ENV}
+        depends_on:
+            - caddy
+
+    caddy:
+        image: caddy:alpine
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - ${BACK_PATH}:/srv/back
+            - ./config/Caddyfile:/etc/caddy/Caddyfile
+            - caddy_data:/data
+            - caddy_config:/config
+        env_file:
+            - .env
+        depends_on:
+            back:
+                condition: service_healthy
+
+    db:
+        image: mysql:8.0
+        volumes:
+            - db_data:/var/lib/mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+
+    adminer:
+        image: adminer
+        ports:
+            - 8080:8080
+
+    redis:
+        image: redis:alpine
+
+volumes:
+    db_data:
+    caddy_data:
+    caddy_config:
+    pnpm_store:
