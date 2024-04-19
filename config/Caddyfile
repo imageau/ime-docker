@@ -3,13 +3,28 @@
     reverse_proxy front:3000
 }
 
-{$BACK_DOMAIN}, caddy {
+{$BACK_DOMAIN} {
     tls {$TLS_CONFIG}
-    root * /srv/back/public
+    root * /srv/back{$INDEX_PATH}
 	file_server
 	encode gzip
     
 	php_fastcgi back:9000 {
-        root /var/www/public
+        root /var/www{$INDEX_PATH}
 	}
+}
+
+adminer.{$TOOLS_DOMAIN} {
+    tls {$TLS_CONFIG}
+    reverse_proxy adminer:8080
+}
+
+minio.{$TOOLS_DOMAIN} {
+    tls {$TLS_CONFIG}
+    reverse_proxy minio:9001
+}
+
+storage.{$TOOLS_DOMAIN} {
+    tls {$TLS_CONFIG}
+    reverse_proxy minio:9000
 }

@@ -5,6 +5,8 @@ x-back-settings: &back-settings
         args:
             ENV: ${ENV}
             BACK_PATH: ${BACK_PATH}
+    extra_hosts:
+        - storage.${TOOLS_DOMAIN}:host-gateway
     environment:
         APP_URL: 'https://${BACK_DOMAIN}'
         JWT_DOMAIN: '.${FRONT_DOMAIN}'
@@ -16,11 +18,15 @@ x-back-settings: &back-settings
         DB_USERNAME: ${DB_USERNAME}
         DB_PASSWORD: ${DB_PASSWORD}
         REDIS_HOST: redis
+        QUEUE_CONNECTION: redis
     volumes:
         - ${BACK_PATH}/.env:/var/www/.env
+        - caddy_data:/etc/caddy_data
     depends_on:
+        - caddy
         - db
         - redis
+        - minio
 
 services:
     back:
@@ -28,7 +34,7 @@ services:
 
     horizon:
         <<: *back-settings
-        command: php artisan horizon
+        command: sh -c "/setup-certs.sh && php artisan horizon"
         depends_on:
             back:
                 condition: service_healthy
@@ -41,7 +47,7 @@ services:
                 ENV: ${ENV}
                 FRONT_PATH: ${FRONT_PATH}
         extra_hosts:
-            - '${BACK_DOMAIN}:host-gateway'
+            - ${BACK_DOMAIN}:host-gateway
         volumes:
             - ${FRONT_PATH}/.env:/app/.env
             - pnpm_store:/app/.pnpm-store
@@ -50,7 +56,10 @@ services:
             PROXY_URL: 'https://${BACK_DOMAIN}'
             ENV: ${ENV}
         depends_on:
-            - caddy
+            caddy:
+                condition: service_started
+            back:
+                condition: service_healthy
 
     caddy:
         image: caddy:alpine
@@ -62,11 +71,12 @@ services:
             - ./config/Caddyfile:/etc/caddy/Caddyfile
             - caddy_data:/data
             - caddy_config:/config
-        env_file:
-            - .env
-        depends_on:
-            back:
-                condition: service_healthy
+        environment:
+            TLS_CONFIG: ${TLS_CONFIG}
+            FRONT_DOMAIN: ${FRONT_DOMAIN}
+            BACK_DOMAIN: ${BACK_DOMAIN}
+            TOOLS_DOMAIN: ${TOOLS_DOMAIN}
+            INDEX_PATH: ${INDEX_PATH}
 
     db:
         image: mysql:8.0
@@ -80,14 +90,22 @@ services:
 
     adminer:
         image: adminer
-        ports:
-            - 8080:8080
 
     redis:
         image: redis:alpine
+
+    minio:
+        image: minio/minio
+        command: minio server /data/minio --console-address ":9001"
+        environment:
+            MINIO_ROOT_USER: minio
+            MINIO_ROOT_PASSWORD: password
+        volumes:
+            - minio_data:/data/minio
 
 volumes:
     db_data:
     caddy_data:
     caddy_config:
     pnpm_store:
+    minio_data:

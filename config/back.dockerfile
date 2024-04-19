@@ -45,6 +45,9 @@ RUN pecl install redis \
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+RUN echo "cp /etc/caddy_data/caddy/pki/authorities/local/root.crt /usr/local/share/ca-certificates/caddy_root.crt && update-ca-certificates" > /setup-certs.sh \
+    && chmod +x /setup-certs.sh
+
 # Set the working directory
 WORKDIR /var/www
 
@@ -59,11 +62,12 @@ HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
 
 FROM base as development
 # development only instructions
-CMD ["php-fpm"]
+
+CMD sh -c "/setup-certs.sh && php-fpm";
 
 FROM base as preview
 # preview only instructions
-CMD ["php-fpm"]
+CMD sh -c "/setup-certs.sh && php-fpm";
 
 FROM base as production
 
