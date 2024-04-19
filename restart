@@ -1,14 +1,34 @@
 #!/bin/bash
 
+# Read environment from .env file
+ENV=$(grep '^ENV=' .env | cut -d '=' -f2)
+
+# Function to handle Docker compose up/down commands based on environment
+compose_up_down() {
+    local service=$1
+
+    docker compose down $service
+
+    if [ "$ENV" != "production" ]; then
+        docker compose up $service --build -d
+    else
+        docker compose -f docker-compose.yml up $service --build -d
+    fi
+}
+
+# Main script starts here
 ARG=$1
 FORCE=$2
 
+# Determine action based on command line args
 if [[ "$ARG" == "--force" ]]; then
-    docker compose down
-    docker compose up --build -d
+    compose_up_down ""
 elif [[ "$FORCE" == "--force" ]]; then
-    docker compose down $ARG
-    docker compose up $ARG --build -d
+    compose_up_down "$ARG"
 else
-    docker compose restart $ARG
+if [ "$ENV" != "production" ]; then
+        docker compose restart $ARG
+    else
+        docker compose -f docker-compose.yml restart $ARG
+    fi
 fi

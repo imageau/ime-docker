@@ -54,7 +54,7 @@ if [ "$ENV" != "production" ]; then
 else
     $SED_CMD '/^NODE_TLS_REJECT_UNAUTHORIZED/d' $FRONT_PATH/.env
 
-    docker-compose -f docker-compose.yml up --build -d
+    docker compose -f docker-compose.yml up --build -d
 fi
 
 echo "Waiting for front service to be fully up and running..."
