@@ -16,6 +16,8 @@ x-back-settings: &back-settings
         DB_USERNAME: ${DB_USERNAME}
         DB_PASSWORD: ${DB_PASSWORD}
         REDIS_HOST: redis
+    volumes:
+        - ${BACK_PATH}/.env:/var/www/.env
     depends_on:
         - db
         - redis
@@ -41,6 +43,7 @@ services:
         extra_hosts:
             - '${BACK_DOMAIN}:host-gateway'
         volumes:
+            - ${FRONT_PATH}/.env:/app/.env
             - pnpm_store:/app/.pnpm-store
         environment:
             NEXT_PUBLIC_API_URL: 'https://${BACK_DOMAIN}'
