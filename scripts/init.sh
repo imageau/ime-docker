@@ -11,10 +11,10 @@ FRONT_PATH=$(grep '^FRONT_PATH=' .env | cut -d '=' -f2)
 # Define sed in-place command depending on the operating system
 if [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
-  SED_CMD="sed -i ''"
+  SED_CMD="sed -i '' "
 else
   # Linux and others
-  SED_CMD="sed -i"
+  SED_CMD="sed -i "
 fi
 
 git clone $BACK_REPO $BACK_PATH
@@ -26,6 +26,7 @@ $SED_CMD '/^DB_DATABASE/d' $BACK_PATH/.env
 $SED_CMD '/^DB_USERNAME/d' $BACK_PATH/.env
 $SED_CMD '/^DB_PASSWORD/d' $BACK_PATH/.env
 $SED_CMD '/^REDIS_HOST/d' $BACK_PATH/.env
+$SED_CMD '/^QUEUE_CONNECTION/d' $BACK_PATH/.env
 $SED_CMD '/^APP_URL/d' $BACK_PATH/.env
 $SED_CMD '/^JWT_DOMAIN/d' $BACK_PATH/.env
 $SED_CMD '/^FRONTEND_URL/d' $BACK_PATH/.env
