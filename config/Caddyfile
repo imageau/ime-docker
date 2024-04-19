@@ -1,10 +1,10 @@
 {$FRONT_DOMAIN} {
-    tls internal
+    tls {$TLS_CONFIG}
     reverse_proxy front:3000
 }
 
 {$BACK_DOMAIN}, caddy {
-    tls internal
+    tls {$TLS_CONFIG}
     root * /srv/back/public
 	file_server
 	encode gzip

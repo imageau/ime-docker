@@ -8,23 +8,32 @@ BACK_PATH=$(grep '^BACK_PATH=' .env | cut -d '=' -f2)
 FRONT_REPO=$(grep '^FRONT_REPO=' .env | cut -d '=' -f2)
 FRONT_PATH=$(grep '^FRONT_PATH=' .env | cut -d '=' -f2)
 
+# Define sed in-place command depending on the operating system
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # macOS
+  SED_CMD="sed -i ''"
+else
+  # Linux and others
+  SED_CMD="sed -i"
+fi
+
 git clone $BACK_REPO $BACK_PATH
 cp $BACK_PATH/.env.example $BACK_PATH/.env 
-sed -i '' '/^DB_CONNECTION/d' $BACK_PATH/.env
-sed -i '' '/^DB_HOST/d' $BACK_PATH/.env
-sed -i '' '/^DB_PORT/d' $BACK_PATH/.env
-sed -i '' '/^DB_DATABASE/d' $BACK_PATH/.env
-sed -i '' '/^DB_USERNAME/d' $BACK_PATH/.env
-sed -i '' '/^DB_PASSWORD/d' $BACK_PATH/.env
-sed -i '' '/^REDIS_HOST/d' $BACK_PATH/.env
-sed -i '' '/^APP_URL/d' $BACK_PATH/.env
-sed -i '' '/^JWT_DOMAIN/d' $BACK_PATH/.env
-sed -i '' '/^FRONTEND_URL/d' $BACK_PATH/.env
+$SED_CMD '/^DB_CONNECTION/d' $BACK_PATH/.env
+$SED_CMD '/^DB_HOST/d' $BACK_PATH/.env
+$SED_CMD '/^DB_PORT/d' $BACK_PATH/.env
+$SED_CMD '/^DB_DATABASE/d' $BACK_PATH/.env
+$SED_CMD '/^DB_USERNAME/d' $BACK_PATH/.env
+$SED_CMD '/^DB_PASSWORD/d' $BACK_PATH/.env
+$SED_CMD '/^REDIS_HOST/d' $BACK_PATH/.env
+$SED_CMD '/^APP_URL/d' $BACK_PATH/.env
+$SED_CMD '/^JWT_DOMAIN/d' $BACK_PATH/.env
+$SED_CMD '/^FRONTEND_URL/d' $BACK_PATH/.env
 
 git clone $FRONT_REPO $FRONT_PATH
 cp $FRONT_PATH/.env.example $FRONT_PATH/.env
-sed -i '' '/^NEXT_PUBLIC_API_URL/d' $FRONT_PATH/.env
-sed -i '' '/^PROXY_URL/d' $FRONT_PATH/.env
+$SED_CMD '/^NEXT_PUBLIC_API_URL/d' $FRONT_PATH/.env
+$SED_CMD '/^PROXY_URL/d' $FRONT_PATH/.env
 
 if [ "$ENV" != "production" ]; then
     docker compose up --build -d
@@ -43,7 +52,7 @@ if [ "$ENV" != "production" ]; then
     ./artisan init --seed
     docker compose restart front
 else
-    sed -i '' '/^NODE_TLS_REJECT_UNAUTHORIZED/d' $FRONT_PATH/.env
+    $SED_CMD '/^NODE_TLS_REJECT_UNAUTHORIZED/d' $FRONT_PATH/.env
 
     docker-compose -f docker-compose.yml up --build -d
 fi
